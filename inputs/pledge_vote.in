@@ -1,0 +1,114 @@
+
+[mint]
+amount: u64 = 12u64;
+token_info_id: u64 = 12u64;
+
+// // Inputs for the `stake` function.
+[stake]
+token: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+amount: u64 = 3u64;
+expires: u64 = 33331121u64;
+
+// Inputs for the `unstake` function.
+[unstake]
+deposited_token: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 3u64,
+  expires: 10u64,
+  staked_at: 0u64,
+  _nonce: 2929674495897089498700240460310862688071164219465206856297347812566015137495group
+};
+
+// Inputs for the `unstake` function.
+[transfer]
+token: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+receiver: address = aleo1t0uer3jgtsgmx5tq6x6f9ecu8tr57rzzfnc2dgmcqldceal0ls9qf6st7a;
+amount: u64 = 2u64;
+
+[join]
+t0: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+t1: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+
+[split]
+t0: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+amount: u64 = 2u64;
+
+[fee]
+t0: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 12u64,
+  expires: 0u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+amount: u64 = 2u64;
+
+[start_proposal]
+proposal_id: u64 = 1u64;
+duration: u64 = 1000u64; 
+token: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 1200u64,
+  expires: 1000u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+
+[vote]
+proposal_id: u64 = 1u64;
+token: Token = Token {
+  owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
+  gates: 0u64,
+  token_info_id: 12u64,
+  amount: 1200u64,
+  expires: 1000u64,
+  staked_at: 0u64,
+  _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
+};
+is_agree: u8 = 1u8; 

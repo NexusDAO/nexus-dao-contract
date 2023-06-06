@@ -1,0 +1,10 @@
+{
+    "program": "pledge_vote.aleo",
+    "version": "0.0.0",
+    "description": "",
+    "development": {
+        "private_key": "APrivateKey1zkp5SwSVjPCQ3t9vKsWaVe7S1wUJkFo5KdXbcAKAyuqHksf",
+        "address": "aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd"
+    },
+    "license": "MIT"
+}
