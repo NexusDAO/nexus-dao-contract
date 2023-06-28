@@ -70,7 +70,7 @@ program pledge_vote.aleo {
 
     struct HoldToken {
         // id: u64,
-        // token_owner: field,
+        token_owner: field,
         amount: u64,
         // staked: u64,
         token_info_id: u64,
@@ -169,10 +169,12 @@ program pledge_vote.aleo {
         let hash_id: field = BHP256::hash(token_info_id);
         let k: field = hash_owner + hash_id;
         let hold_token: HoldToken = Mapping::get_or_init(balances, k, HoldToken{
+            token_owner: hash_owner,
             amount: 0u64,
             token_info_id: token_info_id,
         });
         let new_hold_token: HoldToken = HoldToken {
+            token_owner: hash_owner,
             amount: hold_token.amount+amount,
             token_info_id: token_info_id,
         };
@@ -212,8 +214,9 @@ program pledge_vote.aleo {
     finalize stake(public hash_owner: field, public amount: u64, token_info_id: u64) {
         let hash_id: field = BHP256::hash(token_info_id);
         let k: field = hash_owner + hash_id;
-        let hold_token: HoldToken = Mapping::get_or_init(stake_amounts, k, HoldToken {amount: 0u64, token_info_id: token_info_id});
+        let hold_token: HoldToken = Mapping::get_or_init(stake_amounts, k, HoldToken {token_owner: hash_owner, amount: 0u64, token_info_id: token_info_id});
         let new_hold_token: HoldToken = HoldToken {
+            token_owner: hash_owner,
             amount: hold_token.amount + amount,
             token_info_id: token_info_id,
         };
@@ -251,6 +254,7 @@ program pledge_vote.aleo {
         let k: field = hash_owner + hash_id;
         let hold_token: HoldToken = Mapping::get(stake_amounts, k);
         let new_hold_token: HoldToken = HoldToken {
+            token_owner: hash_owner,
             amount: hold_token.amount - amount,
             token_info_id: token_info_id,
         };
@@ -289,20 +293,24 @@ program pledge_vote.aleo {
         let hash_id: field = BHP256::hash(token_info_id);
         let k1: field = sender_hash + hash_id;
         let hold_token1: HoldToken = Mapping::get_or_init(balances, k1, HoldToken{
+            token_owner: sender_hash,
             amount: 0u64,
             token_info_id: token_info_id,
         });
         let new_hold_token1: HoldToken = HoldToken {
+            token_owner: sender_hash,
             amount: hold_token1.amount-amount,
             token_info_id: token_info_id,
         };
         Mapping::set(balances, k1, new_hold_token1);
-        let k2: field = sender_hash + hash_id;
+        let k2: field = receiver_hash + hash_id;
         let hold_token2: HoldToken = Mapping::get_or_init(balances, k2, HoldToken{
+            token_owner: receiver_hash,
             amount: 0u64,
             token_info_id: token_info_id,
         });
         let new_hold_token2: HoldToken = HoldToken {
+            token_owner: receiver_hash,
             amount: hold_token2.amount+amount,
             token_info_id: token_info_id,
         };
@@ -383,10 +391,12 @@ program pledge_vote.aleo {
         let hash_id: field = BHP256::hash(token_info_id);
         let k: field = hash_owner + hash_id;
         let hold_token: HoldToken = Mapping::get_or_init(balances, k, HoldToken{
+            token_owner: hash_owner,
             amount: 0u64,
             token_info_id: token_info_id,
         });
         let new_hold_token: HoldToken = HoldToken {
+            token_owner: hash_owner,
             amount: hold_token.amount-amount,
             token_info_id: token_info_id,
         };
@@ -776,6 +786,7 @@ program pledge_vote.aleo {
         let hash_id: field = BHP256::hash(token_info_id);
         let k: field = hash_owner + hash_id;
         let new_hold_token: HoldToken = HoldToken {
+            token_owner: hash_owner,
             amount: 90000000000u64,
             token_info_id: token_info_id,
         };
