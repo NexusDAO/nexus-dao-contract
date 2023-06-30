@@ -101,11 +101,13 @@ program pledge_vote.aleo {
     struct Vote {
         voter: field,
         proposal_id: u64,
-        token_id: u64,
+        // token_id: u64,
         is_agreed: bool,
+        time: u64,
+        amount: u64,
     }
 
-    // key:0、timestamp    1、TokenInfo_id     2、Proposal_id      3、DAO_id     4、        5、
+    // key:0、timestamp    1、TokenInfo_id     2、Proposal_id      3、DAO_id     4、vote_id        5、
     mapping auto_increment: u8 => u64; 
 
     mapping profiles: address => Profile;
@@ -124,8 +126,7 @@ program pledge_vote.aleo {
 
     mapping proposals: u64 => Proposal;
 
-    // key:field(token_id+proposal_id)
-    mapping votes: field => Vote;
+    mapping votes: u64 => Vote;
 
     // key:token_id value:timestamp
     mapping extend_pledge_period: u64 => u64;
@@ -598,10 +599,11 @@ program pledge_vote.aleo {
             expires: token.expires,
             staked_at: proposal_id,
         };
-        return t then finalize(proposal_id, token.expires, token.amount, token.token_info_id, is_agree);
+        let hash_owner: field = BHP256::hash(token.owner);
+        return t then finalize(proposal_id, hash_owner, token.expires, token.amount, token.token_info_id, is_agree);
     }
 
-    finalize vote (proposal_id: u64, expires: u64, amount: u64, token_info_id: u64, public is_agree: u8) {
+    finalize vote (proposal_id: u64, hash_owner: field, expires: u64, amount: u64, token_info_id: u64, public is_agree: u8) {
         let proposal: Proposal = Mapping::get(proposals, proposal_id);
         assert(proposal.created+proposal.duration<=expires);
         let token_info: TokenInfo = Mapping::get(token_infos, token_info_id);
@@ -656,6 +658,18 @@ program pledge_vote.aleo {
             passed_tokens_proportion: dao.passed_tokens_proportion,
         };
         Mapping::set(daos, dao.id, new_dao);
+
+        let time: u64 = Mapping::get(auto_increment, 0u8);
+        let vote_id: u64 = Mapping::get_or_init(auto_increment, 4u8, 1u64);
+        Mapping::set(auto_increment, 4u8, vote_id+1u64);
+        let v: Vote = Vote {
+            voter: hash_owner,
+            proposal_id: proposal_id,
+            is_agreed: agree,
+            time: time,
+            amount: amount,
+        };
+        Mapping::set(votes, vote_id, v);
     }
 
     transition close_proposal (public proposal_id: u64) {
@@ -729,6 +743,7 @@ program pledge_vote.aleo {
         Mapping::set(auto_increment, 2u8, 1u64);
         Mapping::set(auto_increment, 1u8, 1u64);
         Mapping::set(auto_increment, 3u8, 1u64);
+        Mapping::set(auto_increment, 4u8, 1u64);
         let dao: DAO = DAO {
             id: dao_id,
             name: 8320234725348491599field,     //swiftDAO
