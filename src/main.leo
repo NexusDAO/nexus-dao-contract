@@ -16,7 +16,7 @@ program pledge_vote.aleo {
         // participating_tokens_amount: u64,
         adopt: u64,
         reject: u64,
-        // 0<=status<4    0、未开始   1、进行中   2、通过     3、不通过     4、无效
+        // 0<=status<=5    0、未开始   1、进行中   2、通过     3、不通过     4、无效     5、已实施
         status: u8,
     }
 
@@ -166,10 +166,10 @@ program pledge_vote.aleo {
             only_creator_can_mint: token_info.only_creator_can_mint,
         };
         Mapping::set(token_infos, token_info.id, new_token_info);
-        let hash_owner: field = BHP256::hash(owner);
-        let hash_id: field = BHP256::hash(token_info_id);
+        let hash_owner: field = BHP256::hash_to_field(owner);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k: field = hash_owner + hash_id;
-        let hold_token: HoldToken = Mapping::get_or_init(balances, k, HoldToken{
+        let hold_token: HoldToken = Mapping::get_or_use(balances, k, HoldToken{
             token_owner: hash_owner,
             amount: 0u64,
             token_info_id: token_info_id,
@@ -186,7 +186,7 @@ program pledge_vote.aleo {
         is_available(token);
 
         // Compute the hash of the token owner.
-        let hash: field = BHP256::hash(token.owner);
+        let hash: field = BHP256::hash_to_field(token.owner);
         let difference: u64 = token.amount - amount;
 
         let t1: Token = Token {
@@ -213,9 +213,9 @@ program pledge_vote.aleo {
     }
 
     finalize stake(public hash_owner: field, public amount: u64, token_info_id: u64) {
-        let hash_id: field = BHP256::hash(token_info_id);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k: field = hash_owner + hash_id;
-        let hold_token: HoldToken = Mapping::get_or_init(stake_amounts, k, HoldToken {token_owner: hash_owner, amount: 0u64, token_info_id: token_info_id});
+        let hold_token: HoldToken = Mapping::get_or_use(stake_amounts, k, HoldToken {token_owner: hash_owner, amount: 0u64, token_info_id: token_info_id});
         let new_hold_token: HoldToken = HoldToken {
             token_owner: hash_owner,
             amount: hold_token.amount + amount,
@@ -225,7 +225,7 @@ program pledge_vote.aleo {
     }
 
     transition unstake(deposited_token: Token) -> Token {
-        let hash: field = BHP256::hash(deposited_token.owner);
+        let hash: field = BHP256::hash_to_field(deposited_token.owner);
         assert_neq(deposited_token.expires, 0u64);
         let t: Token = Token {
             owner: deposited_token.owner,
@@ -251,7 +251,7 @@ program pledge_vote.aleo {
         //         assert(end<=timestamp);
         //     }
         // }
-        let hash_id: field = BHP256::hash(token_info_id);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k: field = hash_owner + hash_id;
         let hold_token: HoldToken = Mapping::get(stake_amounts, k);
         let new_hold_token: HoldToken = HoldToken {
@@ -289,11 +289,11 @@ program pledge_vote.aleo {
     }
 
     finalize transfer(sender: address, receiver: address, amount: u64, token_info_id: u64) {     
-        let sender_hash: field = BHP256::hash(sender);
-        let receiver_hash: field = BHP256::hash(receiver);
-        let hash_id: field = BHP256::hash(token_info_id);
+        let sender_hash: field = BHP256::hash_to_field(sender);
+        let receiver_hash: field = BHP256::hash_to_field(receiver);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k1: field = sender_hash + hash_id;
-        let hold_token1: HoldToken = Mapping::get_or_init(balances, k1, HoldToken{
+        let hold_token1: HoldToken = Mapping::get_or_use(balances, k1, HoldToken{
             token_owner: sender_hash,
             amount: 0u64,
             token_info_id: token_info_id,
@@ -305,7 +305,7 @@ program pledge_vote.aleo {
         };
         Mapping::set(balances, k1, new_hold_token1);
         let k2: field = receiver_hash + hash_id;
-        let hold_token2: HoldToken = Mapping::get_or_init(balances, k2, HoldToken{
+        let hold_token2: HoldToken = Mapping::get_or_use(balances, k2, HoldToken{
             token_owner: receiver_hash,
             amount: 0u64,
             token_info_id: token_info_id,
@@ -388,10 +388,10 @@ program pledge_vote.aleo {
             only_creator_can_mint: token_info.only_creator_can_mint,
         };
         Mapping::set(token_infos, token_info.id, new_token_info);
-        let hash_owner: field = BHP256::hash(owner);
-        let hash_id: field = BHP256::hash(token_info_id);
+        let hash_owner: field = BHP256::hash_to_field(owner);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k: field = hash_owner + hash_id;
-        let hold_token: HoldToken = Mapping::get_or_init(balances, k, HoldToken{
+        let hold_token: HoldToken = Mapping::get_or_use(balances, k, HoldToken{
             token_owner: hash_owner,
             amount: 0u64,
             token_info_id: token_info_id,
@@ -445,7 +445,7 @@ program pledge_vote.aleo {
         assert(passed_votes_proportion<=100u64);
         assert(passed_tokens_proportion<=100u64);
         let dao_id: u64 = Mapping::get(auto_increment, 3u8);
-        let token_info_id: u64 = Mapping::get_or_init(auto_increment, 1u8, 0u64);
+        let token_info_id: u64 = Mapping::get_or_use(auto_increment, 1u8, 0u64);
         Mapping::set(auto_increment, 3u8, dao_id+1u64);
         Mapping::set(auto_increment, 1u8, token_info_id+1u64);
         let dao: DAO = DAO {
@@ -477,6 +477,23 @@ program pledge_vote.aleo {
         };
         Mapping::set(daos, dao_id, dao);
         Mapping::set(token_infos, token_info_id, token_info);
+        let new_proposal: Proposal = Proposal {
+            id: proposal_id,
+            title: proposal.title,
+            proposer: caller,
+            summary: proposal.summary,
+            body: proposal.body,
+            dao_id: dao_id,
+            created: proposal.created,
+            duration: proposal.duration,
+            proposal_type: proposal.proposal_type,
+            // participating_tokens_amount: 0u64,
+            adopt: proposal.adopt,
+            reject: proposal.reject,
+            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
+            status: 5u8,
+        };
+        Mapping::set(proposals, proposal_id, new_proposal);
     }
 
     transition update_dao (public dao_id: u64, public dao_name: field, public dao_type: u8, public icon: field, public description: field, public official_link: field) {
@@ -509,7 +526,7 @@ program pledge_vote.aleo {
     }
 
     finalize create_proposal (public caller: address, public title: field, public summary: field, public body: field, public dao_id: u64, public proposal_type: u8) {
-        let proposal_id: u64 = Mapping::get_or_init(auto_increment, 2u8, 1u64);
+        let proposal_id: u64 = Mapping::get_or_use(auto_increment, 2u8, 1u64);
         Mapping::set(auto_increment, 2u8, proposal_id+1u64);
         let proposal: Proposal = Proposal {
             id: proposal_id,
@@ -524,7 +541,7 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 0u64,
             reject: 0u64,
-            // 0<=status<4    0、未开始   1、进行中   2、通过     3、不通过
+            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
             status: 0u8,
         };
         Mapping::set(proposals, proposal_id, proposal);
@@ -567,7 +584,7 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 0u64,
             reject: 0u64,
-            // 0<=status<4    0、未开始   1、进行中   2、通过     3、不通过
+            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
             status: 1u8,
         };
         Mapping::set(proposals, proposal_id, new_proposal);
@@ -599,7 +616,7 @@ program pledge_vote.aleo {
             expires: token.expires,
             staked_at: proposal_id,
         };
-        let hash_owner: field = BHP256::hash(token.owner);
+        let hash_owner: field = BHP256::hash_to_field(token.owner);
         return t then finalize(proposal_id, hash_owner, token.expires, token.amount, token.token_info_id, is_agree);
     }
 
@@ -660,7 +677,7 @@ program pledge_vote.aleo {
         Mapping::set(daos, dao.id, new_dao);
 
         let time: u64 = Mapping::get(auto_increment, 0u8);
-        let vote_id: u64 = Mapping::get_or_init(auto_increment, 4u8, 1u64);
+        let vote_id: u64 = Mapping::get_or_use(auto_increment, 4u8, 1u64);
         Mapping::set(auto_increment, 4u8, vote_id+1u64);
         let v: Vote = Vote {
             voter: hash_owner,
@@ -797,8 +814,8 @@ program pledge_vote.aleo {
     }
 
     finalize test (public creator: address, public timestamp: u64, public token_info_id: u64) {
-        let hash_owner: field = BHP256::hash(creator);
-        let hash_id: field = BHP256::hash(token_info_id);
+        let hash_owner: field = BHP256::hash_to_field(creator);
+        let hash_id: field = BHP256::hash_to_field(token_info_id);
         let k: field = hash_owner + hash_id;
         let new_hold_token: HoldToken = HoldToken {
             token_owner: hash_owner,
@@ -855,14 +872,12 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 50000000000u64,
             reject: 0u64,
-            // 0<=status<4    0、未开始   1、进行中   2、通过     3、不通过
+            // 0<=status<=5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
             status: 1u8,
         };
         Mapping::set(proposals, 1u64, p);
         Mapping::set(extend_pledge_period, 0u64, 0u64);
     }
-
-    
 
     inline is_available(token: Token) {
         assert_eq(token.expires, 0u64);
