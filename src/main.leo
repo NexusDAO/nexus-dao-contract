@@ -755,7 +755,8 @@ program pledge_vote.aleo {
 
     finalize init (public creator: address, public timestamp: u64) {
         Mapping::set(auto_increment, 0u8, timestamp);
-        let dao_id: u64 = 0u64;
+        let dao_id: u64 = Mapping::get_or_use(auto_increment, 3u8, 0u64);
+        assert(dao_id<1u64);
         let token_info_id: u64 = 0u64;
         Mapping::set(auto_increment, 2u8, 1u64);
         Mapping::set(auto_increment, 1u8, 1u64);
