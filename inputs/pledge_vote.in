@@ -10,12 +10,12 @@ token: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
 amount: u64 = 3u64;
-expires: u64 = 33331121u64;
+expires: u32 = 33331121u32;
 
 // Inputs for the `unstake` function.
 [unstake]
@@ -24,7 +24,7 @@ deposited_token: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 3u64,
-  expires: 10u64,
+  expires: 10u32,
   staked_at: 0u64,
   _nonce: 2929674495897089498700240460310862688071164219465206856297347812566015137495group
 };
@@ -36,7 +36,7 @@ token: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -49,7 +49,7 @@ t0: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -58,7 +58,7 @@ t1: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -69,7 +69,7 @@ t0: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -81,7 +81,7 @@ t0: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 12u64,
-  expires: 0u64,
+  expires: 0u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -89,13 +89,13 @@ amount: u64 = 2u64;
 
 [start_proposal]
 proposal_id: u64 = 1u64;
-duration: u64 = 1000u64; 
+duration: u32 = 1000u32; 
 token: Token = Token {
   owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
   gates: 0u64,
   token_info_id: 12u64,
   amount: 1200u64,
-  expires: 1000u64,
+  expires: 1000u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };
@@ -107,7 +107,7 @@ token: Token = Token {
   gates: 0u64,
   token_info_id: 12u64,
   amount: 1200u64,
-  expires: 1000u64,
+  expires: 1000u32,
   staked_at: 0u64,
   _nonce: 4844677074534711916640401188729234055827034398115339213601971380539777521192group
 };

@@ -9,8 +9,8 @@ program pledge_vote.aleo {
         body: field,
         // staked_token_id: u64,
         dao_id: u64,
-        created: u64,
-        duration: u64,
+        created: u32,
+        duration: u32,
         // 0<=proposal_type<8  0、Create DAO 1、Protocol Upgrade 2、Documentation and Education Resources 3、Fund Allocation 4、Governance Process 5、Community Development 6、New Project / Collaboration    7、Parameter Adjustment
         proposal_type: u8,
         // participating_tokens_amount: u64,
@@ -63,7 +63,7 @@ program pledge_vote.aleo {
         // staked_stage等于质押时最新提案ID,使用质押代币Token对提案Proposal投票时，若Token.staked_stage<Proposal.id,无法对其投票
         // staked_stage: u64,  // staked_stage=0:未质押状态    staked_stage>0:在投票周期为staked_stage时质押
         // staked: u64,    // staked=0:未质押状态    staked>0:时间戳为staked时质押
-        expires: u64,
+        expires: u32,
         staked_at: u64,     // 提案ID
 
     }
@@ -103,7 +103,7 @@ program pledge_vote.aleo {
         proposal_id: u64,
         // token_id: u64,
         is_agreed: bool,
-        time: u64,
+        time: u32,
         amount: u64,
     }
 
@@ -129,7 +129,7 @@ program pledge_vote.aleo {
     mapping votes: u64 => Vote;
 
     // key:token_id value:timestamp
-    mapping extend_pledge_period: u64 => u64;
+    mapping extend_pledge_period: u64 => u32;
 
     transition mint(amount: u64, token_info_id: u64) -> Token {
         let owner: address = self.caller;
@@ -138,7 +138,7 @@ program pledge_vote.aleo {
             gates: 0u64,
             amount: amount,
             // staked: 0u64,
-            expires: 0u64,
+            expires: 0u32,
             token_info_id: token_info_id,
             staked_at: 0u64,
         } then finalize (owner, amount, token_info_id);
@@ -182,7 +182,7 @@ program pledge_vote.aleo {
         Mapping::set(balances, k, new_hold_token);
     }
 
-    transition stake(token: Token, amount: u64, expires: u64) -> (Token, Token) {
+    transition stake(public token: Token, amount: u64, expires: u32) -> (Token, Token) {
         is_available(token);
 
         // Compute the hash of the token owner.
@@ -194,7 +194,7 @@ program pledge_vote.aleo {
             gates: 0u64,
             amount: difference,
             // staked: 0u64,
-            expires: 0u64,
+            expires: 0u32,
             staked_at: 0u64,
             token_info_id: token.token_info_id,
         };
@@ -224,24 +224,25 @@ program pledge_vote.aleo {
         Mapping::set(stake_amounts, k, new_hold_token);
     }
 
-    transition unstake(deposited_token: Token) -> Token {
+    transition unstake(public deposited_token: Token) -> Token {
         let hash: field = BHP256::hash_to_field(deposited_token.owner);
-        assert_neq(deposited_token.expires, 0u64);
+        assert_neq(deposited_token.expires, 0u32);
         let t: Token = Token {
             owner: deposited_token.owner,
             gates: deposited_token.gates,
             amount: deposited_token.amount,
             // staked: 0u64,
-            expires: 0u64,
+            expires: 0u32,
             staked_at: 0u64,
             token_info_id: deposited_token.token_info_id,
         };
         return t then finalize(self.caller, hash, deposited_token.amount, deposited_token.token_info_id, deposited_token.expires, deposited_token.staked_at);
     }
 
-    finalize unstake(public caller: address, public hash_owner: field, public amount: u64, public token_info_id: u64, public expires: u64, public staked_at: u64) {
+    finalize unstake(public caller: address, public hash_owner: field, public amount: u64, public token_info_id: u64, public expires: u32, public staked_at: u64) {
         // 条件：1、考虑提案不通过延长质押  2、质押期限已到
-        let timestamp: u64 = Mapping::get(auto_increment, 0u8);
+        // let timestamp: u64 = Mapping::get(auto_increment, 0u8);
+        let timestamp: u32 = block.height;
         assert(expires<=timestamp);
         //  以下if代码存在问题
         // if staked_at >= 1u64 {
@@ -263,7 +264,7 @@ program pledge_vote.aleo {
     }
 
     /* Transfer */
-    transition transfer(token: Token, receiver: address, amount: u64) -> (Token, Token) {
+    transition transfer(public token: Token, receiver: address, amount: u64) -> (Token, Token) {
         // Transfer the tokens publicly, by invoking the computation on-chain.
         is_available(token);
         let difference: u64 = token.amount - amount;
@@ -281,7 +282,7 @@ program pledge_vote.aleo {
             owner: receiver,
             gates: 0u64,
             amount: amount,
-            expires: 0u64,
+            expires: 0u32,
             staked_at: 0u64,
             token_info_id: token.token_info_id,
         };
@@ -318,7 +319,7 @@ program pledge_vote.aleo {
         Mapping::set(balances, k2, new_hold_token2);
     }
 
-    transition join(t0: Token, t1: Token) -> Token {
+    transition join(public t0: Token, public t1: Token) -> Token {
         is_available(t0);
         assert_eq(t0.token_info_id, t1.token_info_id);
         let sum: u64 = t0.amount + t1.amount;
@@ -326,14 +327,14 @@ program pledge_vote.aleo {
             owner: t0.owner,
             gates: t0.gates+t1.gates,
             amount: sum,
-            expires: 0u64,
+            expires: 0u32,
             staked_at: 0u64,
             token_info_id: t0.token_info_id,
         };
         return t2;
     }
 
-    transition split(t0: Token, amount: u64) -> (Token, Token) {
+    transition split(public t0: Token, amount: u64) -> (Token, Token) {
         is_available(t0);
         let difference: u64 = t0.amount - amount;
         let t1: Token = Token {
@@ -349,7 +350,7 @@ program pledge_vote.aleo {
             owner: t0.owner,
             gates: 0u64,
             amount: amount,
-            expires: 0u64,
+            expires: 0u32,
             staked_at: 0u64,
             token_info_id: t0.token_info_id,
         };
@@ -357,7 +358,7 @@ program pledge_vote.aleo {
         return (t1, t2);
     }
 
-    transition fee(t0: Token, amount: u64) -> Token {
+    transition fee(public t0: Token, amount: u64) -> Token {
         is_available(t0);
         let difference: u64 = t0.amount - amount;
         let t1: Token = Token {
@@ -417,14 +418,14 @@ program pledge_vote.aleo {
         Mapping::set(profiles, caller, profile);
     }
 
-    transition update_time (public timestamp: u64) {
-        is_admin();
-        return then finalize(timestamp);
-    }
+    // transition update_time (public timestamp: u64) {
+    //     is_admin();
+    //     return then finalize(timestamp);
+    // }
 
-    finalize update_time (public timestamp: u64) {
-        Mapping::set(auto_increment, 0u8, timestamp);
-    }
+    // finalize update_time (public timestamp: u64) {
+    //     Mapping::set(auto_increment, 0u8, timestamp);
+    // }
 
     transition create_dao (public dao_name: field, public dao_type: u8, public icon: field, public description: field, public official_link: field, public passed_votes_proportion: u64, public passed_tokens_proportion: u64, 
         public token_name: field, public symbol: field, public supply: u64, public decimals: u8, public max_mint_amount: u64, public only_creator_can_mint: bool,
@@ -535,8 +536,8 @@ program pledge_vote.aleo {
             summary: summary,
             body: body,
             dao_id: dao_id,
-            created: 0u64,
-            duration: 0u64,
+            created: 0u32,
+            duration: 0u32,
             proposal_type: proposal_type,
             // participating_tokens_amount: 0u64,
             adopt: 0u64,
@@ -547,13 +548,13 @@ program pledge_vote.aleo {
         Mapping::set(proposals, proposal_id, proposal);
     }
 
-    transition start_proposal (public proposal_id: u64, public duration: u64, public token: Token) -> Token {
+    transition start_proposal (public proposal_id: u64, public duration: u32, public token: Token) -> Token {
         // - 条件：
         // - 需要质押代币|代币质押时间为提案持续时间
         // - 题案通过返回代币|
         // - 题案不通过有惩罚|延长代币质押时间
         assert(token.amount>=1000u64);
-        assert_neq(token.expires, 0u64);
+        assert_neq(token.expires, 0u32);
         let t: Token = Token {
             owner: token.owner,
             gates: token.gates,
@@ -565,11 +566,12 @@ program pledge_vote.aleo {
         return t then finalize(self.caller, proposal_id, duration, token.expires);
     }
 
-    finalize start_proposal (public caller: address, public proposal_id: u64, public duration: u64, public expires: u64) {
-        let created: u64 = Mapping::get(auto_increment, 0u8);
+    finalize start_proposal (public caller: address, public proposal_id: u64, public duration: u32, public expires: u32) {
+        // let created: u64 = Mapping::get(auto_increment, 0u8);
+        let created: u32 = block.height;
         let proposal: Proposal = Mapping::get(proposals, proposal_id);
         assert_eq(proposal.proposer, caller);
-        assert(duration>=86400u64);
+        assert(duration>=2u32);         // 为方便测试设置为2u32,正式部署修改为10000u32
         assert(created+duration<=expires);
         let new_proposal: Proposal = Proposal {
             id: proposal_id,
@@ -590,7 +592,7 @@ program pledge_vote.aleo {
         Mapping::set(proposals, proposal_id, new_proposal);
     }
 
-    transition vote (public proposal_id: u64, token: Token, public is_agree: u8) -> Token {
+    transition vote (public proposal_id: u64, public token: Token, public is_agree: u8) -> Token {
         // - 投票条件：
         //     - 持有组织的治理代币
         //     - 质押组织的治理代币
@@ -606,7 +608,7 @@ program pledge_vote.aleo {
         //         - 能进行多次投票
         //         - 投票过的代币无法再选择
         assert(is_agree<2u8);
-        assert_neq(token.expires, 0u64);
+        assert_neq(token.expires, 0u32);
         assert_eq(token.staked_at, 0u64);
         let t: Token = Token {
             owner: token.owner,
@@ -620,7 +622,7 @@ program pledge_vote.aleo {
         return t then finalize(proposal_id, hash_owner, token.expires, token.amount, token.token_info_id, is_agree);
     }
 
-    finalize vote (proposal_id: u64, hash_owner: field, expires: u64, amount: u64, token_info_id: u64, public is_agree: u8) {
+    finalize vote (proposal_id: u64, hash_owner: field, expires: u32, amount: u64, token_info_id: u64, public is_agree: u8) {
         let proposal: Proposal = Mapping::get(proposals, proposal_id);
         assert(proposal.created+proposal.duration<=expires);
         let token_info: TokenInfo = Mapping::get(token_infos, token_info_id);
@@ -676,7 +678,8 @@ program pledge_vote.aleo {
         };
         Mapping::set(daos, dao.id, new_dao);
 
-        let time: u64 = Mapping::get(auto_increment, 0u8);
+        // let time: u64 = Mapping::get(auto_increment, 0u8);
+        let time: u32 = block.height;
         let vote_id: u64 = Mapping::get_or_use(auto_increment, 4u8, 1u64);
         Mapping::set(auto_increment, 4u8, vote_id+1u64);
         let v: Vote = Vote {
@@ -699,8 +702,9 @@ program pledge_vote.aleo {
     finalize close_proposal (public caller: address, public proposal_id: u64) {
         let proposal: Proposal = Mapping::get(proposals, proposal_id);
         assert_eq(caller, proposal.proposer);
-        let timestamp: u64 = Mapping::get(auto_increment, 0u8);
-        let end: u64 = proposal.created+proposal.duration;
+        // let timestamp: u64 = Mapping::get(auto_increment, 0u8);
+        let timestamp: u32 = block.height;
+        let end: u32 = proposal.created+proposal.duration;
         assert(end<timestamp);
         let dao: DAO = Mapping::get(daos, proposal.dao_id);
         let token_info: TokenInfo = Mapping::get(token_infos, dao.token_info_id);
@@ -712,7 +716,7 @@ program pledge_vote.aleo {
             pass_proposal_count = pass_proposal_count+1u64;
         } else {
             status = 3u8;
-            Mapping::set(extend_pledge_period, proposal_id, end + 2592000u64);
+            Mapping::set(extend_pledge_period, proposal_id, end + 10000u32);
         }
         let new_proposal: Proposal = Proposal{
             id: proposal_id,
@@ -748,13 +752,13 @@ program pledge_vote.aleo {
         Mapping::set(daos, dao.id, new_dao);
     }
 
-    transition init (public timestamp: u64) {
+    transition init () {
         is_admin();
-        return then finalize(self.caller, timestamp);
+        return then finalize(self.caller);
     }
 
-    finalize init (public creator: address, public timestamp: u64) {
-        Mapping::set(auto_increment, 0u8, timestamp);
+    finalize init (public creator: address) {
+        // Mapping::set(auto_increment, 0u8, timestamp);
         let dao_id: u64 = Mapping::get_or_use(auto_increment, 3u8, 0u64);
         assert(dao_id<1u64);
         let token_info_id: u64 = 0u64;
@@ -798,7 +802,7 @@ program pledge_vote.aleo {
             owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
             gates: 0u64,
             amount: 50000000000u64,
-            expires: 800000u64,
+            expires: 8000u32,
             staked_at: 0u64,
             token_info_id: 0u64,
         };
@@ -806,7 +810,7 @@ program pledge_vote.aleo {
             owner: aleo1jht08tf8gr52zhv93k7r0hxh30zjyv4ku4y5h4gz2dfjyksmvy8qtwydvd,
             gates: 0u64,
             amount: 40000000000u64,
-            expires: 800000u64,
+            expires: 8000u32,
             staked_at: 0u64,
             token_info_id: 0u64,
         };
@@ -825,7 +829,7 @@ program pledge_vote.aleo {
         };
         Mapping::set(stake_amounts, k, new_hold_token);
         Mapping::set(balances, k, new_hold_token);
-        Mapping::set(auto_increment, 0u8, timestamp);
+        // Mapping::set(auto_increment, 0u8, timestamp);
         let dao_id: u64 = 0u64;
         // let token_info_id: u64 = 0u64;
         Mapping::set(auto_increment, 2u8, 1u64);
@@ -867,8 +871,8 @@ program pledge_vote.aleo {
             summary: 0field,
             body: 0field,
             dao_id: 0u64,
-            created: 1u64,
-            duration: 2u64,
+            created: 1u32,
+            duration: 2u32,
             proposal_type: 0u8,
             // participating_tokens_amount: 0u64,
             adopt: 50000000000u64,
@@ -877,11 +881,11 @@ program pledge_vote.aleo {
             status: 1u8,
         };
         Mapping::set(proposals, 1u64, p);
-        Mapping::set(extend_pledge_period, 0u64, 0u64);
+        Mapping::set(extend_pledge_period, 0u64, 0u32);
     }
 
     inline is_available(token: Token) {
-        assert_eq(token.expires, 0u64);
+        assert_eq(token.expires, 0u32);
     }
 
     inline is_admin() {
