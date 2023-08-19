@@ -7,17 +7,19 @@ To compile this Aleo program, run:
 aleo build
 ```
 
-# SwiftDAO
-Token持有者将投票决定网络手续费率、手续费收益的分配方式以及价值创造方案的实施。Token持有者可以通过投票来决定网络的发展方向，从而实现社区治理。
+# NexusDao
+Token holders will vote to determine the network service fee rate, the distribution method of service fee income and the implementation of the value creation plan. Token holders can vote to determine the development direction of the network, thereby achieving community governance.
 
 Vote Events
-Token持有者可以通过投票来决定网络的发展方向，从而实现社区治理。投票的主要内容包括：
-1. 网络手续费率
-2. 手续费收益的分配方式
-3. 价值创造方案的实施
+Token holders can vote on the direction of the network to enable community governance. The main elements of the vote include:
+1. Network fee rate
+2. the way to distribute the proceeds of the handling fee
+3. Implementation of value creation programs
 
 Vote Rules
 
-质押、投票和奖励 
+Pledges, votes and awards
+
+How to Deploy
 
 `https://medium.com/@CroutonDigital/aleo-how-to-deploy-a-smart-contract-d7f437cebea7`
