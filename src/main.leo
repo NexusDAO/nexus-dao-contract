@@ -545,10 +545,9 @@ program pledge_vote.aleo {
     }
 
     transition start_proposal (public proposal_id: u64, public duration: u32, public token: Token) -> Token {
-        // - 条件：
-        // - 需要质押代币|代币质押时间为提案持续时间
-        // - 题案通过返回代币|
-        // - 题案不通过有惩罚|延长代币质押时间
+        // - Need to stake tokens or have token staking time equal to the proposal's duration
+        // - Tokens returned if the proposal passes
+        // - Penalties or token staking time extension if the proposal fails```
         assert(token.amount>=1000u64);
         assert_neq(token.expires, 0u32);
         let t: Token = Token {
@@ -567,7 +566,7 @@ program pledge_vote.aleo {
         let created: u32 = block.height;
         let proposal: Proposal = Mapping::get(proposals, proposal_id);
         assert_eq(proposal.proposer, caller);
-        assert(duration>=2u32);         // 为方便测试设置为2u32,正式部署修改为10000u32
+        assert(duration>=2u32);         // In order to facilitate testing, set it as 2u32, and when you formally deploy it, change it to 10000u32.
         assert(created+duration<=expires);
         let new_proposal: Proposal = Proposal {
             id: proposal_id,
