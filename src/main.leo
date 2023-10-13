@@ -16,7 +16,7 @@ program pledge_vote.aleo {
         // participating_tokens_amount: u64,
         adopt: u64,
         reject: u64,
-        // 0<=status<=5    0、未开始   1、进行中   2、通过     3、不通过     4、无效     5、已实施
+        // 0<=status<=5   0, Not started; 1, In progress; 2, Passed; 3, Failed; 4, Invalid; 5, Implemented.
         status: u8,
     }
 
@@ -59,12 +59,8 @@ program pledge_vote.aleo {
         gates: u64,
         token_info_id: u64,
         amount: u64,
-        // is_staked: bool, 
-        // staked_stage等于质押时最新提案ID,使用质押代币Token对提案Proposal投票时，若Token.staked_stage<Proposal.id,无法对其投票
-        // staked_stage: u64,  // staked_stage=0:未质押状态    staked_stage>0:在投票周期为staked_stage时质押
-        // staked: u64,    // staked=0:未质押状态    staked>0:时间戳为staked时质押
         expires: u32,
-        staked_at: u64,     // 提案ID
+        staked_at: u64,     // Proposal_id
 
     }
 
@@ -145,7 +141,7 @@ program pledge_vote.aleo {
     }
 
     finalize mint(owner: address, amount: u64, token_info_id: u64) {
-        // 条件：1、amount小于单次最多铸币金额 2、是否仅仅允许创建者铸币  3、是否达到供应量上限
+        // Conditions: 1. Amount is less than the maximum coin minting amount per transaction. 2. Only the creator is allowed to mint coins. 3. The supply limit has been reached.
         let token_info: TokenInfo = Mapping::get(token_infos, token_info_id);
         assert(amount <= token_info.max_mint_amount);
         if token_info.only_creator_can_mint {
@@ -240,11 +236,11 @@ program pledge_vote.aleo {
     }
 
     finalize unstake(public caller: address, public hash_owner: field, public amount: u64, public token_info_id: u64, public expires: u32, public staked_at: u64) {
-        // 条件：1、考虑提案不通过延长质押  2、质押期限已到
+        // Conditions: 1. Consider extending the staking period if the proposal is not approved. 2. The staking period has expired.
         // let timestamp: u64 = Mapping::get(auto_increment, 0u8);
         let timestamp: u32 = block.height;
         assert(expires<=timestamp);
-        //  以下if代码存在问题
+        //  The following if statement has an issue.
         // if staked_at >= 1u64 {
         //     let proposal: Proposal = Mapping::get(proposals, staked_at);
         //     if (proposal.status != 2u8) && (proposal.proposer == caller) {
@@ -491,7 +487,7 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: proposal.adopt,
             reject: proposal.reject,
-            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
+            // 0<=status<5    0, Not started; 1, In progress; 2, Passed; 3, Failed; 5, Implemented.
             status: 5u8,
         };
         Mapping::set(proposals, proposal_id, new_proposal);
@@ -542,7 +538,7 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 0u64,
             reject: 0u64,
-            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
+            // 0<=status<5    0, Not started; 1, In progress; 2, Passed; 3, Failed; 5, Implemented.
             status: 0u8,
         };
         Mapping::set(proposals, proposal_id, proposal);
@@ -586,27 +582,26 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 0u64,
             reject: 0u64,
-            // 0<=status<5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
+            // 0<=status<5    0, Not started; 1, In progress; 2, Passed; 3, Failed; 5, Implemented.
             status: 1u8,
         };
         Mapping::set(proposals, proposal_id, new_proposal);
     }
 
     transition vote (public proposal_id: u64, public token: Token, public is_agree: u8) -> Token {
-        // - 投票条件：
-        //     - 持有组织的治理代币
-        //     - 质押组织的治理代币
-        // - 投票权重：
-        //     - 代币质押量加权
-        // - 投票规则：
-        //     - 每个账号可以对同一个提案进行多次投票
-        //     - 未质押部分的代币：
-        //         - 不可参加投票
-        //     - 质押部分的代币：
-        //         - 条件：质押起止时间段全包含了投票起止时间段
-        //         - 可选择任意数量
-        //         - 能进行多次投票
-        //         - 投票过的代币无法再选择
+        //     - Holding governance tokens of the organization
+        //     - Staking governance tokens of the organization
+        // - Voting Weight:
+        //     - Token staking amount-weighted
+        // - Voting Rules:
+        //     - Each account can vote multiple times on the same proposal
+        //     - Tokens that are not staked:
+        //         - Cannot participate in voting
+        //     - Staked tokens:
+        //         - Conditions: The staking period fully encompasses the voting period
+        //         - Can choose any quantity
+        //         - Can vote multiple times
+        //         - Tokens that have been voted cannot be selected again
         assert(is_agree<2u8);
         assert_neq(token.expires, 0u32);
         assert_eq(token.staked_at, 0u64);
@@ -693,9 +688,8 @@ program pledge_vote.aleo {
     }
 
     transition close_proposal (public proposal_id: u64) {
-        // - 投票结果判定：
-        //     - 当 *投票质押代币总额* ≥ *组织内代币总额* 的3%时：以投票结果为准
-        //     - 当 *投票质押代币总额* < *组织内代币总额* 的3%时：拒绝    延长代币质押时间
+        //     - When *Total voted staked tokens* ≥ 3% of *Total organization tokens*: Follow the voting result
+        //     - When *Total voted staked tokens* < 3% of *Total organization tokens*: Reject and extend token staking period
         return then finalize(self.caller, proposal_id);
     }
 
@@ -877,7 +871,7 @@ program pledge_vote.aleo {
             // participating_tokens_amount: 0u64,
             adopt: 50000000000u64,
             reject: 0u64,
-            // 0<=status<=5    0、未开始   1、进行中   2、通过     3、不通过     5、已实施
+            // 0<=status<=5    0, Not started; 1, In progress; 2, Passed; 3, Failed; 5, Implemented.
             status: 1u8,
         };
         Mapping::set(proposals, 1u64, p);
